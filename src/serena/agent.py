@@ -644,6 +644,8 @@ class ListDirTool(Tool):
 
     def apply(self, relative_path: str, recursive: bool, max_answer_chars: int = _DEFAULT_MAX_ANSWER_LENGTH) -> str:
         """
+        Lists files and directories in the given directory (optionally with recursion).
+
         :param relative_path: the relative path to the directory to list; pass "." to scan the project root
         :param recursive: whether to scan subdirectories recursively
         :param max_answer_chars: if the output is longer than this number of characters,
@@ -1092,7 +1094,7 @@ class WriteMemoryTool(Tool):
         """
         if len(content) > max_answer_chars:
             raise ValueError(
-                f"Content for {memory_file_name    } is too long. Max length is {max_answer_chars} characters. "
+                f"Content for {memory_file_name} is too long. Max length is {max_answer_chars} characters. "
                 + "Please make the content shorter."
             )
 
@@ -1368,8 +1370,17 @@ class InitialInstructionsTool(Tool):
         return self.agent.prompt_factory.create_system_prompt()
 
 
-def iter_tool_classes() -> Generator[type[Tool], None, None]:
-    return iter_subclasses(Tool)
+def iter_tool_classes(same_module_only: bool = True) -> Generator[type[Tool], None, None]:
+    """
+    Iterate over Tool subclasses.
+
+    :param same_module_only: Whether to only iterate over tools defined in the same module as the Tool class
+        or over all subclasses of Tool.
+    """
+    for tool_class in iter_subclasses(Tool):
+        if same_module_only and tool_class.__module__ != Tool.__module__:
+            continue
+        yield tool_class
 
 
 def print_tool_overview() -> None:
